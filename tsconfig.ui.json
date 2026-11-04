@@ -8,7 +8,8 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true
+    "noEmit": true,
+    "types": ["vite/client"]
   },
-  "include": ["src/ui/**/*"]
+  "include": ["src/ui/**/*", "src/ui/vite-env.d.ts"]
 }
