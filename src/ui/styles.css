@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ghost-purple: #6b21a8;
+  --ghost-green: #00ff88;
+  --ghost-dark: #0a0010;
+}
+
+body {
+  background-color: var(--ghost-dark);
+  color: #e8e8e8;
+  font-family: 'Courier New', monospace;
+}
+
+@layer components {
+  .ghost-card {
+    @apply bg-purple-950 border border-purple-700 rounded-xl p-6 shadow-lg shadow-purple-900/50;
+  }
+  .ghost-btn {
+    @apply bg-purple-700 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-lg transition-all duration-200;
+  }
+  .ghost-btn-green {
+    @apply bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2 px-6 rounded-lg transition-all duration-200;
+  }
+  .specter-glow {
+    text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88;
+    color: #00ff88;
+  }
+  .ghost-input {
+    @apply bg-purple-900 border border-purple-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400;
+  }
+}

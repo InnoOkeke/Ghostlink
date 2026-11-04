@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Lint and Typecheck on Save",
+      "trigger": "PostFileSave",
+      "matcher": "\\.(ts|tsx|js)$",
+      "action": {
+        "type": "command",
+        "command": "cd c:\\Users\\IMAOBONG\\Hackathons\\ghostlink && npm run lint 2>&1 | tail -20"
+      }
+    }
+  ]
+}

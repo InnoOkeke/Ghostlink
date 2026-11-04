@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Hackathon Compliance Check on Session Start",
+      "trigger": "SessionStart",
+      "action": {
+        "type": "agent",
+        "prompt": "Before doing any work on this project, verify these Kiroween 2026 hackathon compliance requirements:\n1. The .kiro/ directory exists and is NOT in .gitignore\n2. A LICENSE file exists at the project root (MIT)\n3. A README.md exists with the hackathon category (Frankenstein) mentioned\n4. The .env file (if it exists) is in .gitignore but .env.example is NOT\nIf any of these checks fail, warn the user immediately before proceeding."
+      }
+    }
+  ]
+}
