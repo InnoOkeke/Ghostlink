@@ -30,7 +30,14 @@ const CodeMapSchema = z.object({
   businessRules: z.array(z.string()).default([])
 });
 
-const SYSTEM_PROMPT = `You are a code archaeology expert. Analyze legacy code and extract: function signatures, global variables, side effects, database calls, external dependencies, and implicit business rules.
+const SYSTEM_PROMPT = `You are a code archaeology expert. Analyze legacy code and extract: function signatures, global variables/data definitions, side effects, database calls, external dependencies, and implicit business rules.
+
+Extraction requirements:
+- In "globals", include every global variable, constant, macro, and storage field WITH its legacy type/constraint (e.g., COBOL "NUM1 (PIC 9(5)) -> unsigned integer 0..99999", "AMOUNT (PIC S9(7)V99) -> signed decimal, 2 decimal places", C "#define MAX_BUF 256", Fortran "PARAMETER (MAX_ITER=100)").
+- In "businessRules", explicitly capture:
+  1. Every input validation bound, signedness, overflow limit, string/buffer length, and fixed-point decimal rule implied by legacy types or conditionals.
+  2. Exact user prompt strings, output display strings/formats, formatting widths, and step-by-step calculation order.
+  3. Any implicit control-flow, error-handling, or state mutation behavior.
 
 Return a JSON object matching this exact schema:
 {
@@ -116,11 +123,19 @@ function formatFileIntentSection(
       ? fileCodeMap.businessRules.map((r) => `- ${r}`).join('\n')
       : '- None identified';
 
+  const globalLines =
+    fileCodeMap.globals.length > 0
+      ? fileCodeMap.globals.map((g) => `- ${g}`).join('\n')
+      : '- None identified';
+
   return [
     `### ${fileName} (${language}, ${lineCount} lines)`,
     '',
     '#### Functions',
     fnLines,
+    '',
+    '#### Global State & Data Definitions',
+    globalLines,
     '',
     '#### Business Rules',
     ruleLines,

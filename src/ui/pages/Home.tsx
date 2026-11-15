@@ -3,7 +3,17 @@ import { Link, useNavigate } from 'react-router-dom';
 import FileUpload from '../components/FileUpload';
 
 type TargetStack = 'typescript' | 'python' | 'go';
-type SourceLanguage = 'php' | 'asp' | 'vb6' | 'cobol' | 'delphi';
+type SourceLanguage =
+  | 'php'
+  | 'cobol'
+  | 'vb6'
+  | 'asp'
+  | 'c'
+  | 'cpp'
+  | 'csharp'
+  | 'fortran'
+  | 'delphi'
+  | 'perl';
 type InputMode = 'upload' | 'paste';
 
 interface StagedFile {
@@ -36,10 +46,15 @@ interface RecentJob {
 
 const LANG_LABELS: Record<SourceLanguage, string> = {
   php: 'PHP 4/5',
-  asp: 'Classic ASP (VBScript)',
-  vb6: 'Visual Basic 6',
   cobol: 'COBOL',
-  delphi: 'Delphi / Pascal'
+  vb6: 'Visual Basic (VB6 / VB.NET)',
+  asp: 'Classic ASP (VBScript)',
+  c: 'C',
+  cpp: 'C++',
+  csharp: 'C# (.NET)',
+  fortran: 'Fortran (77/90)',
+  delphi: 'Delphi / Pascal',
+  perl: 'Perl 5'
 };
 
 const STACK_LABELS: Record<TargetStack, string> = {
@@ -50,21 +65,43 @@ const STACK_LABELS: Record<TargetStack, string> = {
 
 const EXT_TO_LANG: Record<string, SourceLanguage> = {
   '.php': 'php',
-  '.asp': 'asp',
-  '.bas': 'vb6',
-  '.vb': 'vb6',
   '.cbl': 'cobol',
   '.cob': 'cobol',
+  '.cpy': 'cobol',
+  '.bas': 'vb6',
+  '.vb': 'vb6',
+  '.cls': 'vb6',
+  '.frm': 'vb6',
+  '.asp': 'asp',
+  '.c': 'c',
+  '.h': 'c',
+  '.cpp': 'cpp',
+  '.cc': 'cpp',
+  '.cxx': 'cpp',
+  '.hpp': 'cpp',
+  '.cs': 'csharp',
+  '.f90': 'fortran',
+  '.f': 'fortran',
+  '.for': 'fortran',
+  '.f77': 'fortran',
+  '.f95': 'fortran',
   '.pas': 'delphi',
-  '.dpr': 'delphi'
+  '.dpr': 'delphi',
+  '.pl': 'perl',
+  '.pm': 'perl'
 };
 
 const DEFAULT_EXT_FOR_LANG: Record<SourceLanguage, string> = {
   php: '.php',
-  asp: '.asp',
-  vb6: '.bas',
   cobol: '.cbl',
-  delphi: '.pas'
+  vb6: '.bas',
+  asp: '.asp',
+  c: '.c',
+  cpp: '.cpp',
+  csharp: '.cs',
+  fortran: '.f90',
+  delphi: '.pas',
+  perl: '.pl'
 };
 
 const ARCHITECTURE_STEPS = [
@@ -141,11 +178,90 @@ const ARCHITECTURE_STEPS = [
   }
 ];
 
-function inferLanguageFromName(filename: string, fallback: SourceLanguage): SourceLanguage {
+function inferLanguageFromName(filename: string): SourceLanguage | null {
   const dotIdx = filename.lastIndexOf('.');
-  if (dotIdx === -1) return fallback;
+  if (dotIdx === -1) return null;
   const ext = filename.slice(dotIdx).toLowerCase();
-  return EXT_TO_LANG[ext] ?? fallback;
+  return EXT_TO_LANG[ext] ?? null;
+}
+
+function detectLanguageFromContent(content: string): SourceLanguage | null {
+  if (!content.trim()) return null;
+
+  if (
+    /\b(?:IDENTIFICATION\s+DIVISION|PROCEDURE\s+DIVISION|WORKING-STORAGE\s+SECTION|DATA\s+DIVISION|PROGRAM-ID\.)/i.test(
+      content
+    ) ||
+    /\bPIC(?:TURE)?\s+(?:IS\s+)?[9XASV()0-9]+/i.test(content)
+  ) {
+    return 'cobol';
+  }
+  if (/<\?(?:php|=)?/i.test(content) || /\$_(?:GET|POST|SESSION|COOKIE|REQUEST|SERVER)\b/.test(content)) {
+    return 'php';
+  }
+  if (
+    (content.includes('<%') && content.includes('%>')) ||
+    /\b(?:Response\.(?:Write|Redirect)|Request\.(?:Form|QueryString)|Server\.CreateObject)\b/i.test(
+      content
+    )
+  ) {
+    return 'asp';
+  }
+  if (
+    /^\s*(?:PROGRAM|SUBROUTINE|INTEGER\s+FUNCTION|REAL\s+FUNCTION|DOUBLE\s+PRECISION\s+FUNCTION)\s+[A-Z0-9_]+/im.test(
+      content
+    ) ||
+    /\b(?:IMPLICIT\s+NONE|END\s+(?:PROGRAM|SUBROUTINE))\b/i.test(content)
+  ) {
+    return 'fortran';
+  }
+  if (
+    /^\s*(?:unit|program)\s+[a-zA-Z_][a-zA-Z0-9_]*\s*;/im.test(content) ||
+    (/\b(?:procedure|function)\s+[a-zA-Z_]\w*/i.test(content) &&
+      /\bbegin\b/i.test(content) &&
+      /\bend\s*;/i.test(content))
+  ) {
+    return 'delphi';
+  }
+  if (
+    /^\s*using\s+System(?:\.[a-zA-Z0-9_.]+)?\s*;/im.test(content) ||
+    /\bConsole\.(?:WriteLine|Write|ReadLine)\b/.test(content)
+  ) {
+    return 'csharp';
+  }
+  if (
+    /^\s*#include\s*<(?:iostream|vector|string|map|memory|algorithm|fstream|sstream)>/im.test(
+      content
+    ) ||
+    /\bstd::(?:cout|cin|string|vector|endl)\b/.test(content) ||
+    /\b[A-Za-z_]\w*::[A-Za-z_~]\w*\s*\(/.test(content)
+  ) {
+    return 'cpp';
+  }
+  if (
+    /^\s*#include\s*<(?:stdio|stdlib|string|math|stdint|unistd|ctype)\.h>/im.test(content) ||
+    /\b(?:printf|scanf|malloc|free)\s*\(/.test(content)
+  ) {
+    return 'c';
+  }
+  if (
+    /\b(?:Public|Private|Dim)\s+\w+\s+As\s+(?:Integer|Long|String|Boolean|Double|Currency|Variant|Object)\b/i.test(
+      content
+    ) ||
+    (/^\s*(?:Public\s+|Private\s+)?(?:Sub|Function)\s+\w+/im.test(content) &&
+      /^\s*End\s+(?:Sub|Function)\b/im.test(content))
+  ) {
+    return 'vb6';
+  }
+  if (
+    /^#!.*perl/im.test(content) ||
+    /\buse\s+(?:strict|warnings|DBI|vars)\b/.test(content) ||
+    /\b(?:my|our)\s+[$@%][a-zA-Z_]\w*/.test(content)
+  ) {
+    return 'perl';
+  }
+
+  return null;
 }
 
 function formatBytes(text: string): string {
@@ -166,22 +282,41 @@ function isDefaultFilename(name: string): boolean {
 function resolvePastedFile(
   rawName: string,
   content: string,
-  selectedLang: SourceLanguage
-): StagedFile {
+  selectedLang: SourceLanguage | '',
+  manualLang: boolean
+): StagedFile | null {
   const trimmed = rawName.trim();
+  const extLang = trimmed && !isDefaultFilename(trimmed) ? inferLanguageFromName(trimmed) : null;
+  const contentLang = detectLanguageFromContent(content);
+
+  let resolvedLang: SourceLanguage | null = null;
+  if (manualLang && selectedLang !== '') {
+    resolvedLang = selectedLang;
+  } else if (extLang) {
+    resolvedLang = extLang;
+  } else if (contentLang) {
+    resolvedLang = contentLang;
+  } else if (selectedLang !== '') {
+    resolvedLang = selectedLang;
+  }
+
+  if (!resolvedLang) {
+    return null;
+  }
+
   if (!trimmed || isDefaultFilename(trimmed)) {
-    const ext = DEFAULT_EXT_FOR_LANG[selectedLang];
+    const ext = DEFAULT_EXT_FOR_LANG[resolvedLang];
     const base = trimmed.toLowerCase().startsWith('legacy_snippet') ? 'legacy_snippet' : 'legacy_module';
     return {
       name: `${base}${ext}`,
       content,
-      language: selectedLang
+      language: resolvedLang
     };
   }
   return {
     name: trimmed,
     content,
-    language: inferLanguageFromName(trimmed, selectedLang)
+    language: resolvedLang
   };
 }
 
@@ -189,9 +324,10 @@ export default function Home() {
   const navigate = useNavigate();
   const [inputMode, setInputMode] = useState<InputMode>('upload');
   const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
-  const [sourceLanguage, setSourceLanguage] = useState<SourceLanguage>('php');
+  const [sourceLanguage, setSourceLanguage] = useState<SourceLanguage | ''>('');
+  const [languageManuallySelected, setLanguageManuallySelected] = useState(false);
   const [targetStack, setTargetStack] = useState<TargetStack>('typescript');
-  const [pastedFilename, setPastedFilename] = useState('legacy_module.php');
+  const [pastedFilename, setPastedFilename] = useState('');
   const [pastedCode, setPastedCode] = useState('');
   const [pushToGithub, setPushToGithub] = useState(false);
   const [githubRepo, setGithubRepo] = useState('');
@@ -233,15 +369,36 @@ export default function Home() {
 
   const handleFilesAdded = async (newFiles: File[]) => {
     setError('');
-    const parsed: StagedFile[] = await Promise.all(
-      newFiles.map(async (f) => ({
-        name: f.name,
-        content: await f.text(),
-        language: inferLanguageFromName(f.name, sourceLanguage)
-      }))
-    );
+    const resolved: StagedFile[] = [];
+    const unresolved: string[] = [];
 
-    setStagedFiles((prev) => [...prev, ...parsed].slice(0, 10));
+    for (const f of newFiles) {
+      const content = await f.text();
+      const lang =
+        (languageManuallySelected && sourceLanguage !== '' ? sourceLanguage : null) ??
+        inferLanguageFromName(f.name) ??
+        detectLanguageFromContent(content) ??
+        (sourceLanguage !== '' ? sourceLanguage : null);
+
+      if (!lang) {
+        unresolved.push(f.name);
+      } else {
+        resolved.push({ name: f.name, content, language: lang });
+      }
+    }
+
+    if (unresolved.length > 0) {
+      setError(
+        `Could not auto-detect language for: ${unresolved.join(', ')}. Please select a Source Language and re-add.`
+      );
+    }
+
+    if (resolved.length > 0) {
+      setStagedFiles((prev) => [...prev, ...resolved].slice(0, 10));
+      if (!languageManuallySelected) {
+        setSourceLanguage(resolved[0].language as SourceLanguage);
+      }
+    }
   };
 
   const handleAddPastedCode = () => {
@@ -254,10 +411,22 @@ export default function Home() {
       return;
     }
 
-    const file = resolvePastedFile(pastedFilename, pastedCode, sourceLanguage);
+    const file = resolvePastedFile(
+      pastedFilename,
+      pastedCode,
+      sourceLanguage,
+      languageManuallySelected
+    );
+    if (!file) {
+      setError('Could not detect language from pasted code or filename. Please select a Source Language.');
+      return;
+    }
 
     setStagedFiles((prev) => [...prev, file].slice(0, 10));
     setPastedCode('');
+    if (isDefaultFilename(pastedFilename)) {
+      setPastedFilename('');
+    }
     setError('');
   };
 
@@ -271,7 +440,7 @@ export default function Home() {
         10
       );
     });
-    if (sample.language in LANG_LABELS) {
+    if (sample.language in LANG_LABELS && !languageManuallySelected) {
       setSourceLanguage(sample.language as SourceLanguage);
     }
   };
@@ -280,13 +449,70 @@ export default function Home() {
     setStagedFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSourceLanguageChange = (newLang: SourceLanguage) => {
+  const handlePastedCodeChange = (val: string) => {
+    setPastedCode(val);
+    const detected = detectLanguageFromContent(val);
+    if (detected && (!languageManuallySelected || sourceLanguage === '')) {
+      setSourceLanguage(detected);
+      if (!pastedFilename.trim() || isDefaultFilename(pastedFilename)) {
+        setPastedFilename(`legacy_module${DEFAULT_EXT_FOR_LANG[detected]}`);
+      }
+    } else if (!val.trim() && !languageManuallySelected) {
+      const extLang =
+        pastedFilename.trim() && !isDefaultFilename(pastedFilename)
+          ? inferLanguageFromName(pastedFilename)
+          : null;
+      if (!extLang) {
+        setSourceLanguage('');
+        if (isDefaultFilename(pastedFilename)) {
+          setPastedFilename('');
+        }
+      }
+    }
+  };
+
+  const handlePastedFilenameChange = (nextName: string) => {
+    setPastedFilename(nextName);
+    if (!languageManuallySelected) {
+      const extLang = nextName.trim() && !isDefaultFilename(nextName) ? inferLanguageFromName(nextName) : null;
+      if (extLang) {
+        setSourceLanguage(extLang);
+      } else {
+        const contentLang = detectLanguageFromContent(pastedCode);
+        setSourceLanguage(contentLang ?? '');
+      }
+    }
+  };
+
+  const handleSourceLanguageChange = (newLang: SourceLanguage | '') => {
     setSourceLanguage(newLang);
+    const manual = newLang !== '';
+    setLanguageManuallySelected(manual);
+
+    if (newLang === '') {
+      const extLang =
+        pastedFilename.trim() && !isDefaultFilename(pastedFilename)
+          ? inferLanguageFromName(pastedFilename)
+          : null;
+      const detected = extLang ?? detectLanguageFromContent(pastedCode);
+      if (detected) {
+        setSourceLanguage(detected);
+        if (!pastedFilename.trim() || isDefaultFilename(pastedFilename)) {
+          setPastedFilename(`legacy_module${DEFAULT_EXT_FOR_LANG[detected]}`);
+        }
+      } else if (isDefaultFilename(pastedFilename)) {
+        setPastedFilename('');
+      }
+      return;
+    }
+
     if (!pastedFilename.trim() || isDefaultFilename(pastedFilename)) {
       setPastedFilename(`legacy_module${DEFAULT_EXT_FOR_LANG[newLang]}`);
     }
     setStagedFiles((prev) =>
-      prev.map((f) => (isDefaultFilename(f.name) ? resolvePastedFile(f.name, f.content, newLang) : f))
+      prev.map((f) =>
+        isDefaultFilename(f.name) ? (resolvePastedFile(f.name, f.content, newLang, true) ?? f) : f
+      )
     );
   };
 
@@ -299,7 +525,16 @@ export default function Home() {
         setError('Pasted code exceeds the 500KB limit.');
         return;
       }
-      const file = resolvePastedFile(pastedFilename, pastedCode, sourceLanguage);
+      const file = resolvePastedFile(
+        pastedFilename,
+        pastedCode,
+        sourceLanguage,
+        languageManuallySelected
+      );
+      if (!file) {
+        setError('Could not detect language from pasted code or filename. Please select a Source Language.');
+        return;
+      }
       filesToSubmit = [...filesToSubmit, file].slice(0, 10);
     }
 
@@ -367,8 +602,8 @@ export default function Home() {
             Bring legacy systems into modern cloud architecture.
           </h1>
 
-          <p className="text-zinc-400 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
-            Archaeology, living documentation, clean-room rewrites, property-based tests, and deployment scaffolding—orchestrated in five autonomous stages.
+          <p className="text-zinc-400 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
+            Archaeology, living documentation, clean-room rewrites, property-based tests, and deployment scaffolding across COBOL, C, C++, C#, VB, Fortran, PHP, Classic ASP, Delphi, and Perl.
           </p>
         </div>
 
@@ -462,14 +697,24 @@ export default function Home() {
         {/* Language & Stack Configuration */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-1.5">
-            <label className="block text-xs font-medium text-zinc-300">
-              Source Language
-            </label>
+            <div className="flex items-center justify-between gap-2">
+              <label className="block text-xs font-medium text-zinc-300">
+                Source Language
+              </label>
+              {sourceLanguage !== '' && !languageManuallySelected && (
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-indigo-500/15 border border-indigo-400/30 text-indigo-300">
+                  Auto-detected: {LANG_LABELS[sourceLanguage]}
+                </span>
+              )}
+            </div>
             <select
               value={sourceLanguage}
-              onChange={(e) => handleSourceLanguageChange(e.target.value as SourceLanguage)}
+              onChange={(e) => handleSourceLanguageChange(e.target.value as SourceLanguage | '')}
               className="ghost-input w-full text-sm"
             >
+              <option value="" className="bg-zinc-900 text-zinc-100">
+                Auto-detect from code / filename
+              </option>
               {(Object.keys(LANG_LABELS) as SourceLanguage[]).map((lang) => (
                 <option key={lang} value={lang} className="bg-zinc-900 text-zinc-100">
                   {LANG_LABELS[lang]}
@@ -544,8 +789,8 @@ export default function Home() {
               <input
                 type="text"
                 value={pastedFilename}
-                onChange={(e) => setPastedFilename(e.target.value)}
-                placeholder="Filename (e.g. legacy_cart.php)"
+                onChange={(e) => handlePastedFilenameChange(e.target.value)}
+                placeholder="Optional filename (auto-named from detected language)"
                 className="ghost-input flex-1 text-sm font-mono"
                 aria-label="Pasted file name"
               />
@@ -559,9 +804,9 @@ export default function Home() {
             </div>
             <textarea
               value={pastedCode}
-              onChange={(e) => setPastedCode(e.target.value)}
+              onChange={(e) => handlePastedCodeChange(e.target.value)}
               rows={10}
-              placeholder="Paste legacy PHP 4/5, Classic ASP, VB6, COBOL, or Delphi source code..."
+              placeholder="Paste legacy COBOL, C, C++, C#, VB6/VB.NET, Fortran, PHP, Classic ASP, Delphi, or Perl source code..."
               className="ghost-input w-full font-mono text-xs leading-relaxed"
               aria-label="Legacy source code input"
             />

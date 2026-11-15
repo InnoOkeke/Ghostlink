@@ -101,7 +101,7 @@ export default function FileUpload({
           id="file-input"
           type="file"
           multiple
-          accept=".php,.asp,.bas,.vb,.cbl,.cob,.pas,.dpr,.txt"
+          accept=".php,.asp,.bas,.vb,.cls,.frm,.cbl,.cob,.cpy,.pas,.dpr,.c,.h,.cpp,.cc,.cxx,.hpp,.cs,.f,.for,.f77,.f90,.f95,.pl,.pm,.txt"
           className="hidden"
           onChange={handleFileInput}
           aria-label="File input"
@@ -130,7 +130,23 @@ export default function FileUpload({
           Up to 10 files · Max 500 KB per file
         </p>
         <div className="mt-3 flex flex-wrap justify-center gap-1.5">
-          {['.php', '.asp', '.bas', '.vb', '.cbl', '.cob', '.pas', '.dpr'].map((ext) => (
+          {[
+            '.php',
+            '.asp',
+            '.bas',
+            '.vb',
+            '.cbl',
+            '.cob',
+            '.pas',
+            '.dpr',
+            '.c',
+            '.cpp',
+            '.h',
+            '.cs',
+            '.f90',
+            '.f',
+            '.pl'
+          ].map((ext) => (
             <span
               key={ext}
               className="px-2 py-0.5 rounded-md text-[11px] font-mono text-zinc-400 bg-white/[0.04] border border-white/[0.06]"

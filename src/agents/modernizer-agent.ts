@@ -19,9 +19,17 @@ function getFileExtension(targetStack: string): string {
     case 'typescript': return '.ts';
     case 'python': return '.py';
     case 'go': return '.go';
-    default: return '.ts';
+    default:
+      throw new Error(`Unsupported target stack: ${targetStack}`);
   }
 }
+
+const FIDELITY_RULES = `Behavioral fidelity requirements (99%-100% equivalence with legacy behavior):
+- Zero unused constants: EVERY constant or limit derived from the legacy code (e.g., NUM_MAX, RESULT_MAX, COBOL PIC bounds, #define macros, Fortran PARAMETERs) MUST be actively checked and enforced in validation/computation — never emit dead constants.
+- Enforce exact numeric bounds, signedness, and overflow checks: unsigned fields (e.g., COBOL PIC 9(n), C unsigned) MUST reject negative numbers and values exceeding their digit/type maximum; fixed-width computed results (e.g., PIC 9(6)) MUST validate against overflow.
+- Preserve exact precision: fixed-point decimal fields (e.g., COBOL PIC ...V99) MUST use exact decimal arithmetic (Decimal in Python, scaled integer/exact rounding in TypeScript/Go) rather than lossy floating-point arithmetic.
+- Preserve 1:1 I/O contracts: keep exact prompt strings, display messages, and calculation order.
+- Modernize unsafe legacy C/C++ idioms (gets, strcpy, sprintf, raw pointer arithmetic) into bounds-checked, memory-safe equivalents while keeping identical input/output behavior.`;
 
 function buildSystemPrompt(targetStack: string): string {
   const stack = targetStack.toLowerCase();
@@ -35,27 +43,36 @@ function buildSystemPrompt(targetStack: string): string {
 - Extract magic numbers/strings to named constants
 - Add JSDoc comments for every exported function
 
+${FIDELITY_RULES}
+
 Return ONLY the modernized TypeScript code, no explanation, no markdown fences.`;
   }
   if (stack === 'python') {
     return `You are an expert Python developer modernizing legacy code. Rewrite the provided legacy code into idiomatic Python 3.11+ with:
 - Type hints on all functions
-- dataclasses or Pydantic models for data structures
+- dataclasses or Pydantic models for data structures (use decimal.Decimal for fixed-point currency/decimal legacy fields)
 - async/await where applicable
 - Proper exception handling
 - Replace SQL string concatenation with parameterized queries
 - Add docstrings for every function
 
+${FIDELITY_RULES}
+
 Return ONLY the modernized Python code, no explanation, no markdown fences.`;
   }
-  return `You are an expert Go developer modernizing legacy code. Rewrite the provided legacy code into idiomatic Go with:
+  if (stack === 'go') {
+    return `You are an expert Go developer modernizing legacy code. Rewrite the provided legacy code into idiomatic Go with:
 - Proper error handling (return errors, don't panic)
 - Structs for data structures
 - Interfaces for abstraction
 - Parameterized SQL queries
 - Go conventions (exported names, package structure)
 
+${FIDELITY_RULES}
+
 Return ONLY the modernized Go code, no explanation, no markdown fences.`;
+  }
+  throw new Error(`Unsupported target stack: ${targetStack}`);
 }
 
 function buildDecisionSystemPrompt(): string {
@@ -111,8 +128,14 @@ ${file.content}
 Functions to preserve (maintain equivalent behavior and exported interfaces):
 ${functionList}
 
+Globals & data definitions (enforce all bounds/types):
+${input.codeMap.globals.map((g) => `- ${g}`).join('\n') || 'None documented'}
+
 Business rules to preserve:
 ${input.codeMap.businessRules.map((r) => `- ${r}`).join('\n') || 'None documented'}
+
+Side effects & I/O contracts:
+${input.codeMap.sideEffects.map((s) => `- ${s}`).join('\n') || 'None documented'}
 
 Database interactions to modernize with parameterized queries:
 ${input.codeMap.dbCalls.map((d) => `- ${d}`).join('\n') || 'None'}`;

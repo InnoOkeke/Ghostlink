@@ -96,10 +96,27 @@ function detectHighlightLanguage(filename: string): string {
     '.asp': 'vbscript',
     '.bas': 'vbnet',
     '.vb': 'vbnet',
-    '.cbl': 'plaintext',
-    '.cob': 'plaintext',
+    '.cls': 'vbnet',
+    '.frm': 'vbnet',
+    '.cbl': 'cobol',
+    '.cob': 'cobol',
+    '.cpy': 'cobol',
     '.pas': 'delphi',
-    '.dpr': 'delphi'
+    '.dpr': 'delphi',
+    '.c': 'c',
+    '.h': 'c',
+    '.cpp': 'cpp',
+    '.cc': 'cpp',
+    '.cxx': 'cpp',
+    '.hpp': 'cpp',
+    '.cs': 'csharp',
+    '.f': 'fortran',
+    '.for': 'fortran',
+    '.f77': 'fortran',
+    '.f90': 'fortran',
+    '.f95': 'fortran',
+    '.pl': 'perl',
+    '.pm': 'perl'
   };
   return map[ext] ?? 'plaintext';
 }
@@ -158,7 +175,7 @@ jobsRouter.get('/samples', async (_req, res) => {
           const content = await fsPromises.readFile(fullPath, 'utf-8');
           return {
             name: entry.name,
-            language: detectLanguageFromFilename(entry.name, 'unknown'),
+            language: detectLanguageFromFilename(entry.name, content),
             content
           };
         })
@@ -195,7 +212,8 @@ jobsRouter.post(
       return;
     }
 
-    const targetStack = (req.body as Record<string, string>).targetStack as
+    const reqBody = req.body as Record<string, string>;
+    const targetStack = reqBody.targetStack as
       | 'typescript'
       | 'python'
       | 'go';
@@ -204,14 +222,30 @@ jobsRouter.post(
       return;
     }
 
-    const mappedFiles = files.map((f) => ({
-      name: f.originalname,
-      content: f.buffer.toString('utf-8'),
-      language: detectLanguageFromFilename(f.originalname, 'unknown')
-    }));
+    const selectedLang = (reqBody.sourceLanguage ?? '').trim().toLowerCase();
+    const mappedFiles = files.map((f) => {
+      const content = f.buffer.toString('utf-8');
+      const detected = detectLanguageFromFilename(f.originalname, content);
+      const language =
+        detected || (selectedLang && selectedLang !== 'auto' ? selectedLang : '');
+      return {
+        name: f.originalname,
+        content,
+        language
+      };
+    });
 
-    const pushToGithub = (req.body as Record<string, string>).pushToGithub === 'true';
-    const githubRepo = (req.body as Record<string, string>).githubRepo;
+    const unresolved = mappedFiles.find((f) => !f.language);
+    if (unresolved) {
+      res.status(400).json({
+        success: false,
+        error: `Could not determine source language for file "${unresolved.name}"`
+      });
+      return;
+    }
+
+    const pushToGithub = reqBody.pushToGithub === 'true';
+    const githubRepo = reqBody.githubRepo;
 
     const input = { files: mappedFiles, targetStack, pushToGithub, githubRepo };
     const job = createJob(input);
