@@ -67,6 +67,80 @@ const DEFAULT_EXT_FOR_LANG: Record<SourceLanguage, string> = {
   delphi: '.pas'
 };
 
+const ARCHITECTURE_STEPS = [
+  {
+    code: '01',
+    title: 'Archaeology Agent',
+    desc: 'Extracts functions, global state, database queries, and hidden business rules.',
+    icon: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="8" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+    )
+  },
+  {
+    code: '02',
+    title: 'Documentation Agent',
+    desc: 'Authors architectural documentation and Mermaid data-flow specifications.',
+    icon: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+      </svg>
+    )
+  },
+  {
+    code: '03',
+    title: 'Modernizer Agent',
+    desc: 'Translates source into strict TypeScript, Python, or Go with decision logs.',
+    icon: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="16 18 22 12 16 6" />
+        <polyline points="8 6 2 12 8 18" />
+      </svg>
+    )
+  },
+  {
+    code: '04',
+    title: 'Test Agent',
+    desc: 'Generates fast-check, pytest/hypothesis, or Go property-based test suites.',
+    icon: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M9 11l3 3L22 4" />
+        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+      </svg>
+    )
+  },
+  {
+    code: '05',
+    title: 'Deploy Agent',
+    desc: 'Scaffolds production Dockerfiles, compose configs, CI workflows, and guides.',
+    icon: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+        <path d="M2 17l10 5 10-5" />
+        <path d="M2 12l10 5 10-5" />
+      </svg>
+    )
+  },
+  {
+    code: 'MCP',
+    title: 'GitHub MCP',
+    desc: 'Creates a repository, commits all generated artifacts, and opens a tracked PR.',
+    icon: (
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="18" cy="18" r="3" />
+        <circle cx="6" cy="6" r="3" />
+        <path d="M13 6h3a2 2 0 0 1 2 2v7" />
+        <line x1="6" y1="9" x2="6" y2="21" />
+      </svg>
+    )
+  }
+];
+
 function inferLanguageFromName(filename: string, fallback: SourceLanguage): SourceLanguage {
   const dotIdx = filename.lastIndexOf('.');
   if (dotIdx === -1) return fallback;
@@ -242,115 +316,149 @@ export default function Home() {
   const hasSubmitData = stagedFiles.length > 0 || (inputMode === 'paste' && pastedCode.trim().length > 0);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-12">
       {/* Hero */}
-      <div className="text-center space-y-4 pt-6">
+      <section className="text-center space-y-5 pt-4 pb-2">
         <div className="flex justify-center">
           <img
             src="/logo.jpg"
-            alt="GhostLink logo"
-            className="w-20 h-20 rounded-[22%] object-cover shadow-2xl border border-purple-500/30"
+            alt="GhostLink"
+            className="w-16 h-16 rounded-[22%] object-cover shadow-2xl ring-1 ring-white/15"
           />
         </div>
-        <h1 className="text-6xl font-bold specter-glow">GhostLink</h1>
-        <p className="text-2xl text-purple-300">Raise your legacy code from the dead</p>
-        <p className="text-bone-dim text-sm max-w-lg mx-auto">
-          Multi-agent AI pipeline: archaeology → documentation → modernization → tests → deployment
-        </p>
-      </div>
 
-      {/* Environment Config Banner */}
+        <div className="space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs font-medium text-zinc-300">
+            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+            Multi-Agent Legacy Code Modernization
+          </div>
+
+          <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight specter-glow max-w-2xl mx-auto leading-[1.1]">
+            Bring legacy systems into modern cloud architecture.
+          </h1>
+
+          <p className="text-zinc-400 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+            Archaeology, living documentation, clean-room rewrites, property-based tests, and deployment scaffolding—orchestrated in five autonomous stages.
+          </p>
+        </div>
+
+        {healthConfig && healthConfig.llmConfigured && (
+          <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1 text-xs">
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              LLM Engine: {healthConfig.llmProvider === 'bedrock' ? 'AWS Bedrock' : 'DeepSeek / OpenAI'}
+            </span>
+            <span
+              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border ${
+                healthConfig.githubConfigured
+                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
+                  : 'bg-white/[0.04] border-white/[0.08] text-zinc-400'
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  healthConfig.githubConfigured ? 'bg-emerald-400' : 'bg-zinc-500'
+                }`}
+              />
+              GitHub MCP: {healthConfig.githubConfigured ? 'Connected' : 'Optional per Push'}
+            </span>
+          </div>
+        )}
+      </section>
+
+      {/* Missing credentials alert */}
       {healthConfig && !healthConfig.llmConfigured && (
-        <div className="bg-amber-950/60 border border-amber-600 rounded-xl px-5 py-4 text-amber-200 text-sm space-y-1">
-          <p className="font-bold">⚠️ LLM Credentials Required</p>
-          <p>
-            No LLM provider is configured on the server. Add{' '}
-            <code className="text-amber-100 bg-amber-900/60 px-1.5 py-0.5 rounded">
-              AWS_ACCESS_KEY_ID
-            </code>{' '}
-            +{' '}
-            <code className="text-amber-100 bg-amber-900/60 px-1.5 py-0.5 rounded">
-              AWS_SECRET_ACCESS_KEY
-            </code>{' '}
-            (for AWS Bedrock) or{' '}
-            <code className="text-amber-100 bg-amber-900/60 px-1.5 py-0.5 rounded">
-              OPENAI_API_KEY
-            </code>{' '}
-            (for OpenAI) to your <code className="text-amber-100">.env</code> file before starting a
-            job.
+        <div className="rounded-2xl bg-amber-950/40 border border-amber-500/30 px-5 py-4 text-amber-200 text-sm space-y-1.5 max-w-4xl mx-auto">
+          <p className="font-semibold flex items-center gap-2">
+            <svg className="w-4 h-4 text-amber-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            LLM Credentials Required
+          </p>
+          <p className="text-amber-200/80 text-xs leading-relaxed">
+            No LLM provider is configured on the server. Set{' '}
+            <code className="text-amber-100 bg-amber-500/15 px-1.5 py-0.5 rounded">OPENAI_API_KEY</code>{' '}
+            (DeepSeek / OpenAI) or AWS Bedrock credentials in your environment variables before running a pipeline.
           </p>
         </div>
       )}
 
-      {healthConfig && healthConfig.llmConfigured && (
-        <div className="flex flex-wrap items-center justify-center gap-3 text-xs">
-          <span className="px-3 py-1 rounded-full bg-emerald-950/60 border border-emerald-700 text-emerald-300">
-            ⚡ LLM Active: {healthConfig.llmProvider === 'bedrock' ? 'AWS Bedrock' : 'DeepSeek / OpenAI'}
-          </span>
-          <span
-            className={`px-3 py-1 rounded-full border ${
-              healthConfig.githubConfigured
-                ? 'bg-emerald-950/60 border-emerald-700 text-emerald-300'
-                : 'bg-purple-950/60 border-purple-700 text-purple-400'
-            }`}
-          >
-            🐙 GitHub MCP: {healthConfig.githubConfigured ? 'Token Configured' : 'Token Optional / Per-Push'}
-          </span>
-        </div>
-      )}
-
-      {/* Form */}
+      {/* Main Studio Workspace */}
       <form
         onSubmit={(e) => {
           void handleSubmit(e);
         }}
-        className="ghost-card space-y-6"
+        className="ghost-card max-w-4xl mx-auto space-y-6"
       >
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <h2 className="text-xl font-bold text-purple-200">🧟 Legacy Code Input</h2>
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-white/[0.06]">
+          <div>
+            <h2 className="text-base font-semibold text-white tracking-tight">
+              Legacy Source Input
+            </h2>
+            <p className="text-xs text-zinc-400 mt-0.5">
+              Upload legacy files, paste a snippet, or load a bundled benchmark sample.
+            </p>
+          </div>
+
+          {/* Segmented Control */}
+          <div className="inline-flex p-1 rounded-xl bg-zinc-950/90 border border-white/[0.08] self-start sm:self-auto">
             <button
               type="button"
               onClick={() => setInputMode('upload')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 inputMode === 'upload'
-                  ? 'bg-purple-700 text-white'
-                  : 'bg-purple-900/50 text-purple-400 hover:text-white'
+                  ? 'bg-zinc-800 text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
               }`}
             >
-              📂 Upload Files
+              Upload Files
             </button>
             <button
               type="button"
               onClick={() => setInputMode('paste')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 inputMode === 'paste'
-                  ? 'bg-purple-700 text-white'
-                  : 'bg-purple-900/50 text-purple-400 hover:text-white'
+                  ? 'bg-zinc-800 text-white shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
               }`}
             >
-              📝 Paste Code
+              Paste Source
             </button>
           </div>
         </div>
 
         {/* One-Click Sample Loader */}
         {samples.length > 0 && (
-          <div className="bg-purple-900/30 border border-purple-800 rounded-lg p-3 space-y-2">
-            <p className="text-xs text-purple-300 font-medium">
-              ⚡ Load Legacy Sample from Disk:
-            </p>
+          <div className="rounded-xl bg-zinc-950/60 border border-white/[0.07] p-3.5 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-zinc-300">
+                Quick-load benchmark sample
+              </span>
+              <span className="text-[11px] text-zinc-500">Click to stage</span>
+            </div>
             <div className="flex flex-wrap gap-2">
-              {samples.map((sample) => (
-                <button
-                  key={sample.name}
-                  type="button"
-                  onClick={() => handleLoadSample(sample)}
-                  className="text-xs px-3 py-1.5 rounded-md bg-purple-900 hover:bg-purple-700 text-purple-200 border border-purple-600 transition-colors"
-                >
-                  + {sample.name} ({sample.language.toUpperCase()})
-                </button>
-              ))}
+              {samples.map((sample) => {
+                const alreadyStaged = stagedFiles.some((f) => f.name === sample.name);
+                return (
+                  <button
+                    key={sample.name}
+                    type="button"
+                    onClick={() => handleLoadSample(sample)}
+                    className={`inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-all ${
+                      alreadyStaged
+                        ? 'bg-indigo-500/15 border-indigo-400/40 text-indigo-200'
+                        : 'bg-white/[0.03] hover:bg-white/[0.07] border-white/[0.08] hover:border-white/[0.16] text-zinc-200'
+                    }`}
+                  >
+                    <span className="font-mono">{sample.name}</span>
+                    <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-400">
+                      {sample.language}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -371,22 +479,22 @@ export default function Home() {
                 value={pastedFilename}
                 onChange={(e) => setPastedFilename(e.target.value)}
                 placeholder="Filename (e.g. legacy_cart.php)"
-                className="ghost-input flex-1 text-sm"
+                className="ghost-input flex-1 text-sm font-mono"
                 aria-label="Pasted file name"
               />
               <button
                 type="button"
                 onClick={handleAddPastedCode}
-                className="ghost-btn text-sm py-2 px-4 shrink-0"
+                className="ghost-btn text-xs shrink-0"
               >
-                + Add Code to Queue
+                + Stage Snippet
               </button>
             </div>
             <textarea
               value={pastedCode}
               onChange={(e) => setPastedCode(e.target.value)}
               rows={10}
-              placeholder="Paste legacy PHP 4/5, Classic ASP, VB6, COBOL, or Delphi code here..."
+              placeholder="Paste legacy PHP 4/5, Classic ASP, VB6, COBOL, or Delphi source code..."
               className="ghost-input w-full font-mono text-xs leading-relaxed"
               aria-label="Legacy source code input"
             />
@@ -396,64 +504,78 @@ export default function Home() {
         {/* Unified Staged Files Queue */}
         {stagedFiles.length > 0 && (
           <div className="space-y-2">
-            <p className="text-sm text-purple-300">
-              {stagedFiles.length} file{stagedFiles.length !== 1 ? 's' : ''} staged (max 10):
-            </p>
-            {stagedFiles.map((file, idx) => (
-              <div
-                key={`${file.name}-${idx}`}
-                className="flex items-center justify-between bg-purple-900/40 border border-purple-700 rounded-lg px-4 py-2 text-sm"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="text-purple-300">📄</span>
-                  <span className="text-white truncate font-mono">{file.name}</span>
-                  <span className="text-xs px-2 py-0.5 rounded bg-purple-800 text-purple-200 uppercase">
-                    {file.language}
-                  </span>
-                  <span className="text-purple-400 text-xs shrink-0">
-                    {formatBytes(file.content)}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveStaged(idx)}
-                  className="text-red-400 hover:text-red-300 ml-2 shrink-0"
-                  aria-label={`Remove ${file.name}`}
+            <div className="flex items-center justify-between text-xs text-zinc-400">
+              <span>
+                {stagedFiles.length} file{stagedFiles.length !== 1 ? 's' : ''} staged for modernization
+              </span>
+              <span className="text-zinc-500">Max 10 files</span>
+            </div>
+            <div className="space-y-2">
+              {stagedFiles.map((file, idx) => (
+                <div
+                  key={`${file.name}-${idx}`}
+                  className="flex items-center justify-between bg-zinc-950/70 border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm"
                 >
-                  ✕
-                </button>
-              </div>
-            ))}
+                  <div className="flex items-center gap-3 min-w-0">
+                    <svg className="w-4 h-4 text-zinc-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    <span className="text-zinc-100 truncate font-mono text-xs">{file.name}</span>
+                    <span className="text-[11px] px-2 py-0.5 rounded-md bg-white/[0.06] text-zinc-300 uppercase tracking-wider">
+                      {file.language}
+                    </span>
+                    <span className="text-zinc-500 text-xs shrink-0">
+                      {formatBytes(file.content)}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveStaged(idx)}
+                    className="p-1 text-zinc-500 hover:text-red-400 transition-colors ml-2 shrink-0"
+                    aria-label={`Remove ${file.name}`}
+                  >
+                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-purple-300">
-              Default Source Language (for pasted / unknown extensions)
+        {/* Language & Stack Configuration */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium text-zinc-300">
+              Fallback Source Language
             </label>
             <select
               value={sourceLanguage}
               onChange={(e) => handleSourceLanguageChange(e.target.value as SourceLanguage)}
-              className="ghost-input w-full"
+              className="ghost-input w-full text-sm"
             >
               {(Object.keys(LANG_LABELS) as SourceLanguage[]).map((lang) => (
-                <option key={lang} value={lang}>
+                <option key={lang} value={lang} className="bg-zinc-900 text-zinc-100">
                   {LANG_LABELS[lang]}
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-purple-300">Target Stack</label>
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium text-zinc-300">
+              Target Cloud Stack
+            </label>
             <select
               value={targetStack}
               onChange={(e) => setTargetStack(e.target.value as TargetStack)}
-              className="ghost-input w-full"
+              className="ghost-input w-full text-sm"
             >
               {(Object.keys(STACK_LABELS) as TargetStack[]).map((stack) => (
-                <option key={stack} value={stack}>
+                <option key={stack} value={stack} className="bg-zinc-900 text-zinc-100">
                   {STACK_LABELS[stack]}
                 </option>
               ))}
@@ -461,12 +583,20 @@ export default function Home() {
           </div>
         </div>
 
-        {/* GitHub toggle */}
-        <div className="space-y-3">
-          <label className="flex items-center gap-3 cursor-pointer">
+        {/* GitHub MCP Toggle */}
+        <div className="rounded-xl bg-zinc-950/60 border border-white/[0.07] p-4 space-y-3">
+          <label className="flex items-center justify-between gap-4 cursor-pointer">
+            <div>
+              <span className="text-sm font-medium text-zinc-100 block">
+                Push modernized repository via GitHub MCP
+              </span>
+              <span className="text-xs text-zinc-400">
+                Automatically create a new GitHub repository and open a documented Pull Request.
+              </span>
+            </div>
             <div
-              className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                pushToGithub ? 'bg-emerald-600' : 'bg-purple-800'
+              className={`relative w-11 h-6 rounded-full transition-colors duration-200 shrink-0 ${
+                pushToGithub ? 'bg-indigo-500' : 'bg-zinc-700'
               }`}
               onClick={() => setPushToGithub((v) => !v)}
               role="checkbox"
@@ -476,44 +606,67 @@ export default function Home() {
             >
               <div
                 className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${
-                  pushToGithub ? 'translate-x-7' : 'translate-x-1'
+                  pushToGithub ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
             </div>
-            <span className="text-sm text-purple-300">🐙 Auto-push to GitHub via MCP when done</span>
           </label>
 
           {pushToGithub && (
             <input
               type="text"
-              placeholder="GitHub repository name (e.g. my-modernized-app)"
+              placeholder="Repository name (leave blank for automatic unique name)"
               value={githubRepo}
               onChange={(e) => setGithubRepo(e.target.value)}
-              className="ghost-input w-full"
+              className="ghost-input w-full text-sm font-mono"
             />
           )}
         </div>
 
         {error && (
-          <div className="bg-red-900/40 border border-red-700 rounded-lg px-4 py-3 text-red-300 text-sm">
-            {error}
+          <div className="rounded-xl bg-red-950/50 border border-red-500/30 px-4 py-3 text-red-200 text-xs flex items-center gap-2">
+            <svg className="w-4 h-4 text-red-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <span>{error}</span>
           </div>
         )}
 
         <button
           type="submit"
           disabled={loading || !hasSubmitData}
-          className="ghost-btn-green w-full text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="ghost-btn-green w-full py-3 text-sm disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none"
         >
-          {loading ? '🌀 Summoning pipeline...' : '⚡ Modernize Code'}
+          {loading ? (
+            <>
+              <span className="w-4 h-4 rounded-full border-2 border-zinc-950/30 border-t-zinc-950 animate-spin" />
+              <span>Initializing Modernization Pipeline...</span>
+            </>
+          ) : (
+            <>
+              <span>Run Modernization Pipeline</span>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 12 19" />
+              </svg>
+            </>
+          )}
         </button>
       </form>
 
       {/* Recent Jobs */}
       {recentJobs.length > 0 && (
-        <div className="ghost-card space-y-4">
-          <h2 className="text-lg font-bold text-purple-200">📜 Recent Modernization Jobs</h2>
-          <div className="space-y-2">
+        <section className="max-w-4xl mx-auto space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              Recent Modernization Runs
+            </h2>
+            <span className="text-xs text-zinc-500">{recentJobs.length} shown</span>
+          </div>
+
+          <div className="rounded-2xl border border-white/[0.08] bg-zinc-900/40 divide-y divide-white/[0.06] overflow-hidden">
             {recentJobs.map((job) => {
               const targetUrl =
                 job.status === 'completed' ? `/results/${job.jobId}` : `/pipeline/${job.jobId}`;
@@ -522,74 +675,78 @@ export default function Home() {
                 <Link
                   key={job.jobId}
                   to={targetUrl}
-                  className="flex flex-wrap items-center justify-between gap-2 bg-purple-900/30 hover:bg-purple-900/60 border border-purple-800 rounded-lg px-4 py-3 text-sm transition-colors"
+                  className="flex items-center justify-between gap-4 px-5 py-3.5 hover:bg-white/[0.03] transition-colors"
                 >
-                  <div className="min-w-0">
-                    <p className="text-white font-mono truncate">{fileNames}</p>
-                    <p className="text-xs text-purple-400">
-                      {job.input?.targetStack ? `→ ${job.input.targetStack} · ` : ''}
+                  <div className="min-w-0 space-y-0.5">
+                    <p className="text-sm text-zinc-100 font-mono truncate">{fileNames}</p>
+                    <p className="text-xs text-zinc-500">
+                      {job.input?.targetStack ? `Target: ${job.input.targetStack} · ` : ''}
                       {new Date(job.createdAt).toLocaleString()}
                     </p>
                   </div>
-                  <span
-                    className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                      job.status === 'completed'
-                        ? 'bg-emerald-900/60 text-emerald-300 border border-emerald-700'
-                        : job.status === 'failed'
-                        ? 'bg-red-900/60 text-red-300 border border-red-700'
-                        : 'bg-purple-800 text-purple-200 border border-purple-600'
-                    }`}
-                  >
-                    {job.status}
-                  </span>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span
+                      className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium border ${
+                        job.status === 'completed'
+                          ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
+                          : job.status === 'failed'
+                            ? 'bg-red-500/10 text-red-300 border-red-500/20'
+                            : 'bg-indigo-500/10 text-indigo-300 border-indigo-500/20'
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${
+                          job.status === 'completed'
+                            ? 'bg-emerald-400'
+                            : job.status === 'failed'
+                              ? 'bg-red-400'
+                              : 'bg-indigo-400'
+                        }`}
+                      />
+                      {job.status}
+                    </span>
+                    <svg className="w-4 h-4 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </div>
                 </Link>
               );
             })}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Feature grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          {
-            icon: '🏺',
-            title: 'Archaeology Agent',
-            desc: 'Extracts business rules, functions, and side effects from legacy code'
-          },
-          {
-            icon: '📜',
-            title: 'Documentation Agent',
-            desc: 'Generates living docs and Mermaid data flow diagrams'
-          },
-          {
-            icon: '⚗️',
-            title: 'Modernizer Agent',
-            desc: 'Rewrites to TypeScript, Python, or Go with annotated decisions'
-          },
-          {
-            icon: '🧪',
-            title: 'Test Agent',
-            desc: 'Property-based tests with fast-check or hypothesis'
-          },
-          {
-            icon: '🚀',
-            title: 'Deploy Agent',
-            desc: 'Dockerfile, docker-compose, and GitHub Actions CI'
-          },
-          {
-            icon: '🐙',
-            title: 'GitHub MCP',
-            desc: 'Auto-creates repo and opens PR with decision log'
-          }
-        ].map(({ icon, title, desc }) => (
-          <div key={title} className="ghost-card text-center space-y-2">
-            <div className="text-3xl">{icon}</div>
-            <h3 className="font-bold text-purple-200 text-sm">{title}</h3>
-            <p className="text-xs text-purple-400">{desc}</p>
-          </div>
-        ))}
-      </div>
+      {/* Bento Architecture Grid */}
+      <section className="max-w-4xl mx-auto space-y-4 pb-4">
+        <div className="text-center space-y-1">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+            Pipeline Architecture
+          </h2>
+          <p className="text-sm text-zinc-500">
+            Five specialized agents followed by automated repository provisioning
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {ARCHITECTURE_STEPS.map(({ code, title, desc, icon }) => (
+            <div
+              key={title}
+              className="rounded-2xl bg-zinc-900/40 border border-white/[0.07] hover:border-white/[0.14] p-5 space-y-3 transition-colors"
+            >
+              <div className="flex items-center justify-between">
+                <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-zinc-200">
+                  {icon}
+                </div>
+                <span className="text-[11px] font-mono text-zinc-500">{code}</span>
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-zinc-100">{title}</h3>
+                <p className="text-xs text-zinc-400 leading-relaxed">{desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

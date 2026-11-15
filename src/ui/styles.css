@@ -1,44 +1,122 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ghost-50: #f0e6ff;
-  --color-ghost-100: #d9b3ff;
-  --color-ghost-200: #b366ff;
-  --color-ghost-300: #8c00ff;
-  --color-ghost-dark: #0a0010;
-  --color-specter-green: #00ff88;
-  --color-specter-dim: #00cc6a;
-  --color-bone-white: #e8e8e8;
-  --color-bone-dim: #aaaaaa;
+  --color-ghost-50: #f4f4f5;
+  --color-ghost-100: #e4e4e7;
+  --color-ghost-200: #a1a1aa;
+  --color-ghost-300: #818cf8;
+  --color-ghost-dark: #09090b;
+  --color-specter-green: #34d399;
+  --color-specter-dim: #10b981;
+  --color-bone-white: #f4f4f5;
+  --color-bone-dim: #a1a1aa;
 }
 
 :root {
-  --ghost-purple: #6b21a8;
-  --ghost-green: #00ff88;
-  --ghost-dark: #0a0010;
+  --ghost-purple: #6366f1;
+  --ghost-green: #10b981;
+  --ghost-dark: #09090b;
+  color-scheme: dark;
 }
 
 body {
-  background-color: var(--ghost-dark);
-  color: #e8e8e8;
-  font-family: 'Courier New', monospace;
+  background-color: #09090b;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -15%, rgba(99, 102, 241, 0.14), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 0%, rgba(139, 92, 246, 0.08), transparent);
+  background-attachment: fixed;
+  color: #f4f4f5;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+code, pre, .font-mono {
+  font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
 @layer components {
   .ghost-card {
-    @apply bg-purple-950 border border-purple-700 rounded-xl p-6 shadow-lg shadow-purple-900/50;
+    background: linear-gradient(180deg, rgba(24, 24, 27, 0.72) 0%, rgba(18, 18, 22, 0.78) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow:
+      0 1px 0 0 rgba(255, 255, 255, 0.05) inset,
+      0 20px 40px -24px rgba(0, 0, 0, 0.75);
   }
+
   .ghost-btn {
-    @apply bg-purple-700 hover:bg-purple-600 text-white font-bold py-2 px-6 rounded-lg transition-all duration-200;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f4f4f5;
+    font-weight: 500;
+    padding: 0.5625rem 1.125rem;
+    border-radius: 0.75rem;
+    transition: all 150ms cubic-bezier(0.22, 1, 0.36, 1);
   }
+
+  .ghost-btn:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.11);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
   .ghost-btn-green {
-    @apply bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2 px-6 rounded-lg transition-all duration-200;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: linear-gradient(180deg, #fafafa 0%, #e4e4e7 100%);
+    color: #09090b;
+    font-weight: 600;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.35),
+      0 0 0 1px rgba(255, 255, 255, 0.15);
+    transition: all 150ms cubic-bezier(0.22, 1, 0.36, 1);
   }
+
+  .ghost-btn-green:hover:not(:disabled) {
+    background: #ffffff;
+    transform: translateY(-0.5px);
+    box-shadow:
+      0 6px 20px -4px rgba(139, 92, 246, 0.35),
+      0 2px 6px rgba(0, 0, 0, 0.4);
+  }
+
   .specter-glow {
-    text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88;
-    color: #00ff88;
+    background: linear-gradient(180deg, #ffffff 0%, #d4d4d8 60%, #a1a1aa 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -0.025em;
   }
+
   .ghost-input {
-    @apply bg-purple-900 border border-purple-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400;
+    background-color: rgba(9, 9, 11, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f4f4f5;
+    border-radius: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+
+  .ghost-input::placeholder {
+    color: #71717a;
+  }
+
+  .ghost-input:focus {
+    outline: none;
+    border-color: rgba(129, 140, 248, 0.7);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
   }
 }

@@ -35,11 +35,11 @@ interface ArtifactsResponse {
 type Tab = 'archaeology' | 'documentation' | 'modernized' | 'tests' | 'deploy';
 
 const TAB_LABELS: Record<Tab, string> = {
-  archaeology: '🏺 Archaeology',
-  documentation: '📜 Documentation',
-  modernized: '⚗️ Modernized Code',
-  tests: '🧪 Tests',
-  deploy: '🚀 Deploy Files'
+  modernized: 'Modernized Code',
+  archaeology: 'Archaeology',
+  documentation: 'Documentation',
+  tests: 'Test Suite',
+  deploy: 'Deploy Config'
 };
 
 export default function Results() {
@@ -146,21 +146,20 @@ export default function Results() {
 
   if (loading) {
     return (
-      <div className="text-center py-20 text-purple-400">
-        <div className="text-4xl animate-spin inline-block">🌀</div>
-        <p className="mt-4">Loading generated artifacts...</p>
+      <div className="text-center py-24 space-y-4">
+        <div className="mx-auto w-8 h-8 rounded-full border-2 border-white/15 border-t-indigo-400 animate-spin" />
+        <p className="text-sm text-zinc-400">Loading generated artifacts...</p>
       </div>
     );
   }
 
   if (loadError) {
     return (
-      <div className="ghost-card border-red-700 bg-red-950/40 text-center space-y-4">
-        <p className="text-3xl">💀</p>
-        <h1 className="text-xl font-bold text-red-300">Unable to load job results</h1>
-        <p className="text-sm text-red-200">{loadError}</p>
-        <Link to="/" className="ghost-btn inline-block">
-          ← Back to Home
+      <div className="max-w-xl mx-auto ghost-card border-red-500/30 bg-red-950/30 text-center space-y-4">
+        <h1 className="text-lg font-semibold text-red-200">Unable to load job results</h1>
+        <p className="text-xs text-red-300/90">{loadError}</p>
+        <Link to="/" className="ghost-btn text-xs">
+          ← Back to Studio
         </Link>
       </div>
     );
@@ -171,29 +170,53 @@ export default function Results() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="ghost-card text-center space-y-3">
-        <div className="text-4xl">💀</div>
-        <h1 className="text-3xl font-bold specter-glow">Your code has been resurrected!</h1>
-        <p className="text-purple-400 text-sm">
-          Job <span className="font-mono text-purple-300">{jobId}</span>
-          {job?.input?.targetStack && <> · Target: {job.input.targetStack}</>}
-          {job?.completedAt && <> — completed {new Date(job.completedAt).toLocaleString()}</>}
-        </p>
-        <div className="flex flex-wrap justify-center gap-3 pt-2">
-          <button onClick={handleDownload} className="ghost-btn">
-            ⬇️ Download ZIP
-          </button>
-          <button
-            onClick={() => setGithubPanelOpen((v) => !v)}
-            disabled={githubLoading}
-            className="ghost-btn-green disabled:opacity-50"
-          >
-            🐙 Push to GitHub
-          </button>
-          <Link to="/" className="ghost-btn">
-            👻 New Job
-          </Link>
+      {/* Executive Summary Header */}
+      <div className="ghost-card space-y-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 border border-emerald-500/20 text-emerald-300">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              Modernization Complete
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight specter-glow">
+              Resurrected Output &amp; Artifacts
+            </h1>
+            <p className="text-xs text-zinc-400">
+              Job <span className="font-mono text-zinc-200">{jobId}</span>
+              {job?.input?.targetStack && (
+                <>
+                  {' '}
+                  · Stack{' '}
+                  <span className="font-mono text-zinc-200 uppercase">
+                    {job.input.targetStack}
+                  </span>
+                </>
+              )}
+              {job?.completedAt && <> · {new Date(job.completedAt).toLocaleString()}</>}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button type="button" onClick={handleDownload} className="ghost-btn text-xs">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Download ZIP
+            </button>
+            <button
+              type="button"
+              onClick={() => setGithubPanelOpen((v) => !v)}
+              disabled={githubLoading}
+              className="ghost-btn-green text-xs disabled:opacity-50"
+            >
+              Push to GitHub
+            </button>
+            <Link to="/" className="ghost-btn text-xs">
+              New Job
+            </Link>
+          </div>
         </div>
 
         {/* GitHub MCP Push Form */}
@@ -202,39 +225,43 @@ export default function Results() {
             onSubmit={(e) => {
               void handleGithubPush(e);
             }}
-            className="mt-4 p-4 bg-purple-900/40 border border-purple-700 rounded-xl text-left max-w-xl mx-auto space-y-3"
+            className="p-4 bg-zinc-950/80 border border-white/[0.1] rounded-xl space-y-3.5"
           >
-            <h3 className="text-sm font-bold text-purple-200">
-              🐙 Push Modernized Repository via GitHub MCP
-            </h3>
-            <div className="space-y-1">
-              <label className="block text-xs text-purple-300">Repository Name</label>
-              <input
-                type="text"
-                value={repoName}
-                onChange={(e) => setRepoName(e.target.value)}
-                placeholder="my-modernized-app"
-                className="ghost-input w-full text-sm"
-                required
-              />
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
+                Create GitHub Repository &amp; Open PR via MCP
+              </h3>
             </div>
-            <div className="space-y-1">
-              <label className="block text-xs text-purple-300">
-                GitHub Personal Access Token (optional if GITHUB_TOKEN is set in .env)
-              </label>
-              <input
-                type="password"
-                value={githubToken}
-                onChange={(e) => setGithubToken(e.target.value)}
-                placeholder="ghp_... (leave blank to use server .env token)"
-                className="ghost-input w-full text-sm"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+              <div className="space-y-1">
+                <label className="block text-xs text-zinc-400">Repository Name</label>
+                <input
+                  type="text"
+                  value={repoName}
+                  onChange={(e) => setRepoName(e.target.value)}
+                  placeholder="my-modernized-app"
+                  className="ghost-input w-full text-xs font-mono"
+                  required
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="block text-xs text-zinc-400">
+                  GitHub PAT (optional if server GITHUB_TOKEN is configured)
+                </label>
+                <input
+                  type="password"
+                  value={githubToken}
+                  onChange={(e) => setGithubToken(e.target.value)}
+                  placeholder="Leave blank to use configured token"
+                  className="ghost-input w-full text-xs font-mono"
+                />
+              </div>
             </div>
             <div className="flex justify-end gap-2">
               <button
                 type="button"
                 onClick={() => setGithubPanelOpen(false)}
-                className="px-3 py-1.5 text-xs rounded-lg bg-purple-950 text-purple-300 border border-purple-700"
+                className="ghost-btn text-xs py-1.5 px-3"
               >
                 Cancel
               </button>
@@ -243,41 +270,41 @@ export default function Results() {
                 disabled={githubLoading}
                 className="ghost-btn-green text-xs py-1.5 px-4 disabled:opacity-50"
               >
-                {githubLoading ? '🌀 Pushing via MCP...' : 'Create Repo & Open PR'}
+                {githubLoading ? 'Provisioning via MCP...' : 'Create Repo & Open PR'}
               </button>
             </div>
           </form>
         )}
 
         {githubError && (
-          <div className="mt-4 p-3 bg-red-950/60 border border-red-700 rounded-lg text-sm text-red-200 max-w-2xl mx-auto">
-            ⚠️ GitHub MCP Error: {githubError}
+          <div className="p-3.5 bg-red-950/50 border border-red-500/30 rounded-xl text-xs text-red-200">
+            GitHub MCP Error: {githubError}
           </div>
         )}
 
         {githubResult && (
-          <div className="mt-4 p-3 bg-emerald-950/40 border border-emerald-700 rounded-lg text-sm space-y-1 max-w-2xl mx-auto">
+          <div className="p-4 bg-emerald-950/35 border border-emerald-500/25 rounded-xl text-xs space-y-1.5">
             {githubResult.repoUrl && (
-              <p>
-                📦 Repo:{' '}
+              <p className="flex flex-wrap items-center gap-2 text-zinc-300">
+                <span className="font-semibold text-emerald-300">Repository:</span>
                 <a
                   href={githubResult.repoUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-emerald-400 hover:underline"
+                  className="font-mono text-emerald-300 hover:underline"
                 >
                   {githubResult.repoUrl}
                 </a>
               </p>
             )}
             {githubResult.prUrl && (
-              <p>
-                🔀 PR:{' '}
+              <p className="flex flex-wrap items-center gap-2 text-zinc-300">
+                <span className="font-semibold text-emerald-300">Pull Request:</span>
                 <a
                   href={githubResult.prUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-emerald-400 hover:underline"
+                  className="font-mono text-emerald-300 hover:underline"
                 >
                   {githubResult.prUrl}
                 </a>
@@ -285,44 +312,52 @@ export default function Results() {
             )}
           </div>
         )}
-      </div>
 
-      {/* Pipeline summary */}
-      {job && (
-        <div className="ghost-card space-y-2">
-          <h2 className="text-sm font-bold text-purple-300">Pipeline Steps</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+        {/* Pipeline Stage Strip */}
+        {job && (
+          <div className="pt-2 border-t border-white/[0.06] grid grid-cols-2 sm:grid-cols-5 gap-2.5">
             {job.steps.map((step) => (
-              <div key={step.name} className="text-center">
-                <div className="text-lg">
-                  {step.status === 'done' ? '✅' : step.status === 'error' ? '💀' : '⏳'}
-                </div>
-                <div className="text-xs text-purple-400 mt-1">
+              <div
+                key={step.name}
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-zinc-950/60 border border-white/[0.06]"
+              >
+                <span
+                  className={`w-2 h-2 rounded-full shrink-0 ${
+                    step.status === 'done'
+                      ? 'bg-emerald-400'
+                      : step.status === 'error'
+                        ? 'bg-red-400'
+                        : 'bg-zinc-500'
+                  }`}
+                />
+                <span className="text-xs font-medium text-zinc-300 truncate">
                   {step.name.replace('Agent', '')}
-                </div>
+                </span>
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Tabs */}
+      {/* Artifact Tabs + Side-by-Side Toggle */}
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
+          <div className="inline-flex flex-wrap gap-1 p-1 rounded-xl bg-zinc-900/70 border border-white/[0.08]">
             {(Object.keys(TAB_LABELS) as Tab[]).map((tab) => {
               const count = artifacts ? artifacts[tab].length : 0;
               return (
                 <button
                   key={tab}
+                  type="button"
                   onClick={() => setActiveTab(tab)}
-                  className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
                     activeTab === tab
-                      ? 'bg-purple-700 text-white'
-                      : 'bg-purple-950 text-purple-400 hover:bg-purple-800 hover:text-white'
+                      ? 'bg-zinc-800 text-white shadow-sm'
+                      : 'text-zinc-400 hover:text-zinc-200'
                   }`}
                 >
-                  {TAB_LABELS[tab]} ({count})
+                  <span>{TAB_LABELS[tab]}</span>
+                  <span className="text-[11px] font-mono text-zinc-500">{count}</span>
                 </button>
               );
             })}
@@ -332,22 +367,24 @@ export default function Results() {
             <button
               type="button"
               onClick={() => setCompareSideBySide((v) => !v)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-medium border transition-all ${
                 compareSideBySide
-                  ? 'bg-emerald-900/60 border-emerald-500 text-emerald-200'
-                  : 'bg-purple-950 border-purple-700 text-purple-300 hover:border-purple-500'
+                  ? 'bg-indigo-500/15 border-indigo-400/40 text-indigo-200'
+                  : 'bg-white/[0.04] border-white/[0.08] text-zinc-300 hover:border-white/[0.16]'
               }`}
             >
-              {compareSideBySide ? '⇄ Side-by-Side Compare: ON' : '⇄ Compare with Legacy Original'}
+              {compareSideBySide ? 'Side-by-Side Diff: ON' : 'Compare with Legacy Original'}
             </button>
           )}
         </div>
 
-        {/* Content */}
+        {/* File Viewers */}
         {activeTab === 'modernized' && compareSideBySide ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-purple-300">🦴 Original Legacy Source</h3>
+            <div className="space-y-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-400 px-1">
+                Legacy Original Source
+              </h3>
               {originalFiles.map((file) => (
                 <CodeViewer
                   key={file.relativePath}
@@ -357,8 +394,10 @@ export default function Results() {
                 />
               ))}
             </div>
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-emerald-300">⚗️ Modernized Output & Decisions</h3>
+            <div className="space-y-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-emerald-300 px-1">
+                Modernized Output &amp; Decisions
+              </h3>
               {activeFiles.map((file) => (
                 <CodeViewer
                   key={file.relativePath}
@@ -381,7 +420,7 @@ export default function Results() {
             ))}
           </div>
         ) : (
-          <div className="ghost-card text-center py-8 text-sm text-purple-400">
+          <div className="ghost-card text-center py-10 text-xs text-zinc-400">
             No generated artifacts found in this category for job {jobId}.
           </div>
         )}

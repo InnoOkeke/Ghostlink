@@ -53,7 +53,6 @@ export default function Pipeline() {
   useEffect(() => {
     if (!jobId) return;
 
-    // Fetch current snapshot immediately so reloads/late joins show accurate state
     fetch(`/api/jobs/${jobId}`)
       .then((r) => r.json())
       .then((res: { data?: JobSnapshot; error?: string }) => {
@@ -209,54 +208,90 @@ export default function Pipeline() {
 
   const allDone = steps.every((s) => s.status === 'done') && overallStatus === 'completed';
   const hasFailed = overallStatus === 'failed' || steps.some((s) => s.status === 'error');
+  const totalProgress = Math.round(
+    steps.reduce((acc, s) => acc + (s.status === 'done' ? 100 : s.progress), 0) / steps.length
+  );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-purple-200">
-            {allDone ? '✅ Pipeline Complete' : hasFailed ? '💀 Pipeline Halted' : '🌀 Pipeline Running'}
-          </h1>
-          <p className="text-sm text-purple-400 mt-1">
-            Job: <span className="text-purple-300 font-mono">{jobId}</span>
-          </p>
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="ghost-card space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-xl font-semibold text-white tracking-tight">
+                {allDone
+                  ? 'Modernization Complete'
+                  : hasFailed
+                    ? 'Pipeline Halted'
+                    : 'Executing Modernization Pipeline'}
+              </h1>
+            </div>
+            <p className="text-xs text-zinc-400">
+              Job ID <span className="font-mono text-zinc-200">{jobId}</span>
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-white/[0.04] border border-white/[0.08] text-zinc-300">
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  connected ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'
+                }`}
+              />
+              {connected ? 'Live Stream' : 'Disconnected'}
+            </span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <div
-            className={`w-2 h-2 rounded-full ${
-              connected ? 'bg-emerald-400' : 'bg-red-500'
-            } animate-pulse`}
-          />
-          <span className="text-xs text-purple-400">{connected ? 'Live' : 'Disconnected'}</span>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-xs text-zinc-400">
+            <span>Overall Progress</span>
+            <span className="font-mono text-zinc-200">{totalProgress}%</span>
+          </div>
+          <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                hasFailed ? 'bg-red-500' : allDone ? 'bg-emerald-500' : 'bg-indigo-500'
+              }`}
+              style={{ width: `${totalProgress}%` }}
+            />
+          </div>
         </div>
       </div>
 
       {allDone && (
-        <div className="ghost-card border-emerald-700 bg-emerald-950/40 text-center space-y-3">
-          <p className="text-2xl">✅</p>
-          <p className="specter-glow font-bold">Pipeline Complete! Redirecting to results...</p>
+        <div className="rounded-2xl bg-emerald-950/35 border border-emerald-500/30 p-6 text-center space-y-3">
+          <div className="mx-auto w-10 h-10 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <p className="text-sm font-semibold text-white">
+            All five pipeline stages completed. Opening generated artifacts...
+          </p>
           <div>
-            <Link to={`/results/${jobId}`} className="ghost-btn-green inline-block text-sm">
-              View Results Now →
+            <Link to={`/results/${jobId}`} className="ghost-btn-green text-xs">
+              View Generated Artifacts →
             </Link>
           </div>
         </div>
       )}
 
       {githubNotice && (
-        <div className="ghost-card border-purple-600 bg-purple-950/50 text-sm text-purple-200">
-          🐙 {githubNotice}
+        <div className="rounded-2xl bg-indigo-950/30 border border-indigo-400/25 px-5 py-3.5 text-xs text-indigo-200 flex items-center gap-2.5">
+          <span className="w-2 h-2 rounded-full bg-indigo-400 shrink-0" />
+          <span>{githubNotice}</span>
         </div>
       )}
 
       {hasFailed && (
-        <div className="ghost-card border-red-700 bg-red-950/40 text-center space-y-3">
-          <p className="text-2xl">💀</p>
-          <p className="text-red-300 font-bold">
-            Pipeline failed. Check the failing step details below.
+        <div className="rounded-2xl bg-red-950/35 border border-red-500/30 p-6 text-center space-y-3">
+          <p className="text-sm font-semibold text-red-200">
+            Pipeline stopped at a failing stage
           </p>
           {pipelineError && (
-            <p className="text-xs text-red-200 font-mono bg-red-950/80 border border-red-800 rounded px-3 py-2 max-w-2xl mx-auto">
+            <p className="text-xs text-red-200 font-mono bg-zinc-950/80 border border-red-500/25 rounded-xl px-4 py-3 max-w-2xl mx-auto text-left break-words">
               {pipelineError}
             </p>
           )}
@@ -267,15 +302,15 @@ export default function Pipeline() {
                 void handleRetry();
               }}
               disabled={retrying}
-              className="ghost-btn-green text-sm disabled:opacity-50"
+              className="ghost-btn-green text-xs disabled:opacity-50"
             >
-              {retrying ? '🌀 Resuming...' : '🔄 Retry Failed Step'}
+              {retrying ? 'Resuming from failed step...' : 'Retry Failed Step'}
             </button>
           </div>
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-3">
         {steps.map((step, idx) => (
           <AgentStep
             key={step.name}
@@ -289,8 +324,8 @@ export default function Pipeline() {
         ))}
       </div>
 
-      <div className="text-center text-xs text-purple-600 pb-4">
-        Status: <span className="text-purple-400">{overallStatus}</span>
+      <div className="text-center text-xs text-zinc-500 pb-4">
+        Job state: <span className="font-mono text-zinc-300">{overallStatus}</span>
       </div>
     </div>
   );
