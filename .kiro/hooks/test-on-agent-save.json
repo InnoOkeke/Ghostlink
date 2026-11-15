@@ -7,7 +7,7 @@
       "matcher": "src/agents/.*\\.ts$",
       "action": {
         "type": "command",
-        "command": "cd c:\\Users\\IMAOBONG\\Hackathons\\ghostlink && npm run test 2>&1 | tail -30"
+        "command": "npm run test"
       }
     }
   ]

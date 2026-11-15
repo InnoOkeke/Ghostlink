@@ -74,17 +74,16 @@ export class TestAgent implements Agent<TestAgentInput, TestAgentOutput> {
       const systemPrompt = getTestSystemPrompt(input.targetStack);
       const testExt = getTestFileExtension(input.targetStack);
 
+      if (input.modernizedFiles.length === 0) {
+        throw new Error('No modernized files provided to TestAgent');
+      }
+
       for (let i = 0; i < input.modernizedFiles.length; i++) {
         const filePath = input.modernizedFiles[i];
         const pct = Math.round(10 + (i / input.modernizedFiles.length) * 80);
         context.onProgress(`Generating tests for ${path.basename(filePath)}...`, pct);
 
-        let modernCode = '';
-        try {
-          modernCode = await fs.readFile(filePath, 'utf-8');
-        } catch {
-          continue;
-        }
+        const modernCode = await fs.readFile(filePath, 'utf-8');
 
         const prompt = `Generate property-based tests for this ${input.targetStack} code.
 

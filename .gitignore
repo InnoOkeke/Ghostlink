@@ -29,6 +29,7 @@ pids/
 *.pid
 *.seed
 *.pid.lock
+outputs/
 
 # OS files
 .DS_Store

@@ -80,14 +80,15 @@ Side Effects: ${input.codeMap.sideEffects.join(', ') || 'none'}`;
         maxTokens: 1024
       });
 
-      // Clean up dataflow — strip any accidental fences
+      // Clean up dataflow — strip any accidental fences and normalize graph syntax
       let mermaid = dataflowResult.content.trim();
-      const fenceMatch = mermaid.match(/```(?:mermaid)?\s*([\s\S]*?)```/);
+      const fenceMatch = mermaid.match(/```(?:mermaid)?\s*([\s\S]*?)```/i);
       if (fenceMatch) {
         mermaid = fenceMatch[1].trim();
       }
+      mermaid = mermaid.replace(/^graph\s+(TD|TB|LR|RL|BT)\b/i, 'flowchart $1');
       if (!mermaid.startsWith('flowchart')) {
-        mermaid = 'flowchart TD\n  A[Start] --> B[Process]\n  B --> C[End]';
+        throw new Error('LLM did not return a valid Mermaid flowchart diagram');
       }
 
       const docPath = path.join(outputDir, 'documentation.md');

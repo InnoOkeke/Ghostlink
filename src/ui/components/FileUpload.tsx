@@ -1,7 +1,9 @@
 import React, { useCallback, useState } from 'react';
 
 interface FileUploadProps {
-  onFilesChange: (files: File[]) => void;
+  onFilesChange?: (files: File[]) => void;
+  onFilesAdded?: (files: File[]) => void;
+  hideFileList?: boolean;
 }
 
 const MAX_FILE_SIZE = 500 * 1024; // 500KB
@@ -12,7 +14,11 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export default function FileUpload({ onFilesChange }: FileUploadProps) {
+export default function FileUpload({
+  onFilesChange,
+  onFilesAdded,
+  hideFileList = false
+}: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -33,11 +39,14 @@ export default function FileUpload({ onFilesChange }: FileUploadProps) {
       });
 
       setErrors(newErrors);
+      if (validFiles.length > 0) {
+        onFilesAdded?.(validFiles);
+      }
       const merged = [...files, ...validFiles].slice(0, 10);
       setFiles(merged);
-      onFilesChange(merged);
+      onFilesChange?.(merged);
     },
-    [files, onFilesChange]
+    [files, onFilesAdded, onFilesChange]
   );
 
   const handleDrop = useCallback(
@@ -64,7 +73,7 @@ export default function FileUpload({ onFilesChange }: FileUploadProps) {
   const removeFile = (index: number) => {
     const updated = files.filter((_, i) => i !== index);
     setFiles(updated);
-    onFilesChange(updated);
+    onFilesChange?.(updated);
   };
 
   return (
@@ -117,7 +126,7 @@ export default function FileUpload({ onFilesChange }: FileUploadProps) {
         </div>
       )}
 
-      {files.length > 0 && (
+      {!hideFileList && files.length > 0 && (
         <div className="space-y-2">
           <p className="text-sm text-purple-400">{files.length} file{files.length !== 1 ? 's' : ''} ready:</p>
           {files.map((file, idx) => (

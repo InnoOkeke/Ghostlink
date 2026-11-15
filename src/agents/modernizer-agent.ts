@@ -94,6 +94,13 @@ export class ModernizerAgent implements Agent<ModernizerInput, ModernizerOutput>
         const pct = Math.round(10 + (i / input.files.length) * 75);
         context.onProgress(`Modernizing ${file.name}...`, pct);
 
+        const functionList =
+          input.codeMap.functions.length > 0
+            ? input.codeMap.functions
+                .map((fn) => `- ${fn.name} (${fn.signature}): ${fn.description}`)
+                .join('\n')
+            : 'None documented';
+
         const prompt = `Modernize this ${file.language} file named "${file.name}" to ${input.targetStack}.
 
 ORIGINAL CODE:
@@ -101,8 +108,14 @@ ORIGINAL CODE:
 ${file.content}
 \`\`\`
 
+Functions to preserve (maintain equivalent behavior and exported interfaces):
+${functionList}
+
 Business rules to preserve:
-${input.codeMap.businessRules.map((r) => `- ${r}`).join('\n') || 'None documented'}`;
+${input.codeMap.businessRules.map((r) => `- ${r}`).join('\n') || 'None documented'}
+
+Database interactions to modernize with parameterized queries:
+${input.codeMap.dbCalls.map((d) => `- ${d}`).join('\n') || 'None'}`;
 
         const modernResult = await invokeModel({
           messages: [{ role: 'user', content: prompt }],

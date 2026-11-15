@@ -1,6 +1,16 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-ghost-50: #f0e6ff;
+  --color-ghost-100: #d9b3ff;
+  --color-ghost-200: #b366ff;
+  --color-ghost-300: #8c00ff;
+  --color-ghost-dark: #0a0010;
+  --color-specter-green: #00ff88;
+  --color-specter-dim: #00cc6a;
+  --color-bone-white: #e8e8e8;
+  --color-bone-dim: #aaaaaa;
+}
 
 :root {
   --ghost-purple: #6b21a8;

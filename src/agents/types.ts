@@ -47,6 +47,9 @@ export interface JobStatus {
   completedAt?: string;
   outputDir: string;
   input?: LegacyCodeInput;
+  error?: string;
+  githubResult?: { repoUrl: string; prUrl: string };
+  githubError?: string;
 }
 
 export interface StepStatus {

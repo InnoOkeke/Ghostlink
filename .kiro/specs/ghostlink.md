@@ -110,17 +110,17 @@ User Input (legacy code)
 
 ## Tasks
 
-- [ ] Set up monorepo with backend API and frontend UI
-- [ ] Implement legacy code parser (tree-sitter integration)
-- [ ] Build Archaeology Agent with structured JSON output
-- [ ] Build Documentation Agent with Mermaid diagram generation
-- [ ] Build Modernizer Agent with decision logging
-- [ ] Build Test Agent with fast-check integration
-- [ ] Build Deploy Agent (Dockerfile + GitHub Actions)
-- [ ] Implement GitHub MCP integration
-- [ ] Build React UI with real-time agent progress streaming
-- [ ] Add ZIP download for all outputs
-- [ ] Write property-based tests for parser and modernizer
-- [ ] Create example legacy code samples
+- [x] Set up monorepo with backend API and frontend UI
+- [x] Implement legacy code parser
+- [x] Build Archaeology Agent with structured JSON output
+- [x] Build Documentation Agent with Mermaid diagram generation
+- [x] Build Modernizer Agent with decision logging
+- [x] Build Test Agent with fast-check integration
+- [x] Build Deploy Agent (Dockerfile + GitHub Actions)
+- [x] Implement GitHub MCP integration
+- [x] Build React UI with real-time agent progress streaming
+- [x] Add ZIP download for all outputs
+- [x] Write property-based tests for parser and archaeology JSON extraction
+- [x] Create example legacy code samples
 - [ ] Record demo video (under 3 minutes)
-- [ ] Write Kiro usage documentation
+- [x] Write Kiro usage documentation

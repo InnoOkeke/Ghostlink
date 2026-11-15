@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import * as fc from 'fast-check';
-import { parseLegacyCode } from '../src/parser/legacy-parser.js';
+import { parseLegacyCode, detectLanguageFromFilename } from '../src/parser/legacy-parser.js';
+import { extractJson } from '../src/agents/archaeology-agent.js';
 
 describe('parseLegacyCode property tests', () => {
   it('never throws on arbitrary strings for PHP', () => {
@@ -118,5 +119,71 @@ describe('parseLegacyCode unit tests', () => {
     const result = parseLegacyCode('', 'php');
     expect(result.functions).toEqual([]);
     expect(result.lineCount).toBeGreaterThanOrEqual(1);
+  });
+
+  it('extracts functionDetails with line numbers and signatures', () => {
+    const code = [
+      '<?php',
+      'function calculate_total($price, $qty) {',
+      '  return $price * $qty;',
+      '}'
+    ].join('\n');
+    const result = parseLegacyCode(code, 'php');
+    expect(result.functionDetails).toHaveLength(1);
+    expect(result.functionDetails[0]).toEqual({
+      name: 'calculate_total',
+      signature: 'function calculate_total($price, $qty)',
+      lineStart: 2,
+      lineEnd: 4
+    });
+  });
+
+  it('extracts dbCalls, sideEffects, and externalDeps from legacy code', () => {
+    const code = [
+      '<?php',
+      'require_once("config.php");',
+      'function get_user($id) {',
+      '  $res = mysql_query("SELECT * FROM users WHERE id = " . $id);',
+      '  echo $_POST["name"];',
+      '}'
+    ].join('\n');
+    const result = parseLegacyCode(code, 'php');
+    expect(result.externalDeps).toContain('config.php');
+    expect(result.dbCalls.some((c) => c.includes('mysql_query') || c.includes('SQL SELECT'))).toBe(true);
+    expect(result.sideEffects.some((s) => s.includes('echo') || s.includes('superglobal'))).toBe(true);
+  });
+
+  it('detects legacy languages from file extensions', () => {
+    expect(detectLanguageFromFilename('cart.php')).toBe('php');
+    expect(detectLanguageFromFilename('login.asp')).toBe('asp');
+    expect(detectLanguageFromFilename('calc.bas')).toBe('vb6');
+    expect(detectLanguageFromFilename('payroll.cbl')).toBe('cobol');
+    expect(detectLanguageFromFilename('form.pas')).toBe('delphi');
+  });
+});
+
+describe('extractJson', () => {
+  it('parses JSON wrapped in markdown code fences', () => {
+    const raw = 'Here is the result:\n```json\n{\n  "functions": [],\n  "globals": ["$conn"]\n}\n```';
+    expect(extractJson(raw)).toEqual({ functions: [], globals: ['$conn'] });
+  });
+
+  it('sanitizes trailing commas in objects and arrays', () => {
+    const raw = '{"functions": [{"name": "foo",},], "globals": ["$x",],}';
+    expect(extractJson(raw)).toEqual({ functions: [{ name: 'foo' }], globals: ['$x'] });
+  });
+
+  it('parses arbitrary JSON objects even with trailing commas inserted', () => {
+    fc.assert(
+      fc.property(
+        fc.dictionary(fc.stringMatching(/^[a-zA-Z_][a-zA-Z0-9_]{0,12}$/), fc.integer()),
+        (obj) => {
+          const json = JSON.stringify(obj);
+          const withTrailingComma =
+            Object.keys(obj).length > 0 ? json.replace(/\}$/, ',}') : json;
+          expect(extractJson(withTrailingComma)).toEqual(obj);
+        }
+      )
+    );
   });
 });
