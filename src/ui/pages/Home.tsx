@@ -245,7 +245,14 @@ export default function Home() {
     <div className="space-y-10">
       {/* Hero */}
       <div className="text-center space-y-4 pt-6">
-        <h1 className="text-6xl font-bold specter-glow">👻 GhostLink</h1>
+        <div className="flex justify-center">
+          <img
+            src="/logo.jpg"
+            alt="GhostLink logo"
+            className="w-20 h-20 rounded-[22%] object-cover shadow-2xl border border-purple-500/30"
+          />
+        </div>
+        <h1 className="text-6xl font-bold specter-glow">GhostLink</h1>
         <p className="text-2xl text-purple-300">Raise your legacy code from the dead</p>
         <p className="text-bone-dim text-sm max-w-lg mx-auto">
           Multi-agent AI pipeline: archaeology → documentation → modernization → tests → deployment

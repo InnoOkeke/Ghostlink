@@ -11,8 +11,16 @@ export default function App() {
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--ghost-dark)' }}>
       <nav className="border-b border-purple-800 px-6 py-4 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold specter-glow hover:opacity-80 transition-opacity">
-          👻 GhostLink
+        <Link
+          to="/"
+          className="flex items-center gap-3 text-xl font-bold specter-glow hover:opacity-85 transition-opacity"
+        >
+          <img
+            src="/logo.jpg"
+            alt="GhostLink"
+            className="w-8 h-8 rounded-[22%] object-cover shadow-md border border-purple-500/20"
+          />
+          <span>GhostLink</span>
         </Link>
         <div className="flex items-center gap-4 text-sm text-purple-300">
           {!isHome && (
