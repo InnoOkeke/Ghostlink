@@ -142,12 +142,12 @@ ${input.codeMap.dbCalls.map((d) => `- ${d}`).join('\n') || 'None'}`;
 
 LEGACY:
 \`\`\`${file.language}
-${file.content.slice(0, 1500)}
+${file.content.slice(0, 32000)}
 \`\`\`
 
 MODERN:
 \`\`\`${input.targetStack}
-${modernCode.slice(0, 1500)}
+${modernCode.slice(0, 32000)}
 \`\`\`
 
 Document the key modernization decisions made.`;
@@ -156,7 +156,7 @@ Document the key modernization decisions made.`;
           messages: [{ role: 'user', content: decisionPrompt }],
           system: decisionSystemPrompt,
           temperature: 0.4,
-          maxTokens: 1024
+          maxTokens: 4096
         });
 
         decisions.push(`\n## File: ${file.name}\n\n${decisionResult.content}`);

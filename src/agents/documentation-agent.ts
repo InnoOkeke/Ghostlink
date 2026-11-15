@@ -56,7 +56,7 @@ ${codeMapSummary}
 \`\`\`
 
 INTENT DOCUMENT:
-${input.intentContent.slice(0, 3000)}`;
+${input.intentContent.slice(0, 24000)}`;
 
       context.onProgress('Generating module documentation...', 50);
 

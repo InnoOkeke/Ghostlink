@@ -154,6 +154,37 @@ function formatBytes(text: string): string {
   return `${(bytes / 1024).toFixed(1)} KB`;
 }
 
+function isDefaultFilename(name: string): boolean {
+  const trimmed = name.trim().toLowerCase();
+  const dotIdx = trimmed.lastIndexOf('.');
+  if (dotIdx === -1) return trimmed === 'legacy_module' || trimmed === 'legacy_snippet';
+  const base = trimmed.slice(0, dotIdx);
+  const ext = trimmed.slice(dotIdx);
+  return (base === 'legacy_module' || base === 'legacy_snippet') && ext in EXT_TO_LANG;
+}
+
+function resolvePastedFile(
+  rawName: string,
+  content: string,
+  selectedLang: SourceLanguage
+): StagedFile {
+  const trimmed = rawName.trim();
+  if (!trimmed || isDefaultFilename(trimmed)) {
+    const ext = DEFAULT_EXT_FOR_LANG[selectedLang];
+    const base = trimmed.toLowerCase().startsWith('legacy_snippet') ? 'legacy_snippet' : 'legacy_module';
+    return {
+      name: `${base}${ext}`,
+      content,
+      language: selectedLang
+    };
+  }
+  return {
+    name: trimmed,
+    content,
+    language: inferLanguageFromName(trimmed, selectedLang)
+  };
+}
+
 export default function Home() {
   const navigate = useNavigate();
   const [inputMode, setInputMode] = useState<InputMode>('upload');
@@ -223,11 +254,9 @@ export default function Home() {
       return;
     }
 
-    const name =
-      pastedFilename.trim() || `legacy_snippet${DEFAULT_EXT_FOR_LANG[sourceLanguage]}`;
-    const lang = inferLanguageFromName(name, sourceLanguage);
+    const file = resolvePastedFile(pastedFilename, pastedCode, sourceLanguage);
 
-    setStagedFiles((prev) => [...prev, { name, content: pastedCode, language: lang }].slice(0, 10));
+    setStagedFiles((prev) => [...prev, file].slice(0, 10));
     setPastedCode('');
     setError('');
   };
@@ -253,9 +282,12 @@ export default function Home() {
 
   const handleSourceLanguageChange = (newLang: SourceLanguage) => {
     setSourceLanguage(newLang);
-    if (!pastedCode.trim()) {
+    if (!pastedFilename.trim() || isDefaultFilename(pastedFilename)) {
       setPastedFilename(`legacy_module${DEFAULT_EXT_FOR_LANG[newLang]}`);
     }
+    setStagedFiles((prev) =>
+      prev.map((f) => (isDefaultFilename(f.name) ? resolvePastedFile(f.name, f.content, newLang) : f))
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -267,10 +299,8 @@ export default function Home() {
         setError('Pasted code exceeds the 500KB limit.');
         return;
       }
-      const name =
-        pastedFilename.trim() || `legacy_snippet${DEFAULT_EXT_FOR_LANG[sourceLanguage]}`;
-      const lang = inferLanguageFromName(name, sourceLanguage);
-      filesToSubmit = [...filesToSubmit, { name, content: pastedCode, language: lang }].slice(0, 10);
+      const file = resolvePastedFile(pastedFilename, pastedCode, sourceLanguage);
+      filesToSubmit = [...filesToSubmit, file].slice(0, 10);
     }
 
     if (filesToSubmit.length === 0) {
@@ -429,6 +459,43 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Language & Stack Configuration */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium text-zinc-300">
+              Source Language
+            </label>
+            <select
+              value={sourceLanguage}
+              onChange={(e) => handleSourceLanguageChange(e.target.value as SourceLanguage)}
+              className="ghost-input w-full text-sm"
+            >
+              {(Object.keys(LANG_LABELS) as SourceLanguage[]).map((lang) => (
+                <option key={lang} value={lang} className="bg-zinc-900 text-zinc-100">
+                  {LANG_LABELS[lang]}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-medium text-zinc-300">
+              Target Cloud Stack
+            </label>
+            <select
+              value={targetStack}
+              onChange={(e) => setTargetStack(e.target.value as TargetStack)}
+              className="ghost-input w-full text-sm"
+            >
+              {(Object.keys(STACK_LABELS) as TargetStack[]).map((stack) => (
+                <option key={stack} value={stack} className="bg-zinc-900 text-zinc-100">
+                  {STACK_LABELS[stack]}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         {/* One-Click Sample Loader */}
         {samples.length > 0 && (
           <div className="rounded-xl bg-zinc-950/60 border border-white/[0.07] p-3.5 space-y-2.5">
@@ -545,43 +612,6 @@ export default function Home() {
             </div>
           </div>
         )}
-
-        {/* Language & Stack Configuration */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div className="space-y-1.5">
-            <label className="block text-xs font-medium text-zinc-300">
-              Fallback Source Language
-            </label>
-            <select
-              value={sourceLanguage}
-              onChange={(e) => handleSourceLanguageChange(e.target.value as SourceLanguage)}
-              className="ghost-input w-full text-sm"
-            >
-              {(Object.keys(LANG_LABELS) as SourceLanguage[]).map((lang) => (
-                <option key={lang} value={lang} className="bg-zinc-900 text-zinc-100">
-                  {LANG_LABELS[lang]}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="block text-xs font-medium text-zinc-300">
-              Target Cloud Stack
-            </label>
-            <select
-              value={targetStack}
-              onChange={(e) => setTargetStack(e.target.value as TargetStack)}
-              className="ghost-input w-full text-sm"
-            >
-              {(Object.keys(STACK_LABELS) as TargetStack[]).map((stack) => (
-                <option key={stack} value={stack} className="bg-zinc-900 text-zinc-100">
-                  {STACK_LABELS[stack]}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
 
         {/* GitHub MCP Toggle */}
         <div className="rounded-xl bg-zinc-950/60 border border-white/[0.07] p-4 space-y-3">
